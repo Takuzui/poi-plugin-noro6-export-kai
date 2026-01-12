@@ -1,11 +1,11 @@
 {
     "name": "poi-plugin-noro6-export-kai",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "main": "index.es",
     "description": "a plugin export ships and equips to noro6",
     "author": {
-        "name": "Takuzu",
-        "url": "https://github.com/Takuzu"
+        "name": "Takuzui",
+        "url": "https://github.com/Takuzui"
     },
     "repository": {
         "type": "git",
@@ -20,7 +20,7 @@
     "license": "MIT",
     "poiPlugin": {
         "title": "noro6导出",
-        "description": "导出舰娘/装备信息至noro6制空权计算器的管理功能",
-        "icon": ""
+        "description": "导出舰娘/装备信息至noro6制空权模拟器的管理功能",
+        "icon": "fa-plane"
     }
 }

@@ -218,35 +218,27 @@ export const reactClass = connect(state => ({
         const result = this.state.result;
         return (
             <div>
-                <h2 className="mergin">制空权模拟器 v2</h2>
-
-                <br />
-                <br />
+                <h2>制空权模拟器 v2</h2>
                 
-                <div className="buttonGroup">
-                    <div className="groups">
-                        <h4>POI页面</h4>
-                        <Button className="openNewPageButton" onClick={this.openNewPage}>
-                            打开制空权计算机
-                        </Button>
-                    </div>
-
-                    <div className="groups">
-                        <h4>可导出至外部浏览器</h4>
-                        <Button className="openNewPageButton" onClick={this.copyUrl}>
-                            复制导出链接
-                        </Button>
-                    </div>
+                <div>
+                    <h4>POI页面</h4>
+                    <Button onClick={this.openNewPage}>
+                        打开制空权模拟器
+                    </Button>
                 </div>
 
-                <br />
-                <br />
+                <div>
+                    <h4>可导出至外部浏览器</h4>
+                    <Button onClick={this.copyUrl}>
+                        复制导出链接
+                    </Button>
+                </div>
 
                 <div>
-                    <h4 className="mergin">单独数据选用</h4>
+                    <h4>单独数据选用</h4>
                     
-                    <div style={{ marginLeft: '10px', marginBottom: '15px' }}>
-                        <label style={{ fontWeight: 500, marginBottom: '8px', display: 'block' }}>舰娘数据</label>
+                    <div>
+                        <label>舰娘数据</label>
                         <RadioGroup
                             onChange={(e) => {
                                 this.setState({ shipExportType: e.target.value });
@@ -263,8 +255,8 @@ export const reactClass = connect(state => ({
                         </RadioGroup>
                     </div>
                     
-                    <div style={{ marginLeft: '10px' }}>
-                        <label style={{ fontWeight: 500, marginBottom: '8px', display: 'block' }}>装备数据</label>
+                    <div>
+                        <label>装备数据</label>
                         <RadioGroup
                             onChange={(e) => {
                                 this.setState({ equipExportType: e.target.value });
