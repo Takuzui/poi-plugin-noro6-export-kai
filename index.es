@@ -269,8 +269,9 @@ export const reactClass = connect(state => ({
         const result = this.exportFleet();
         const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
         
-        // 在poi内部窗口打开
-        const newWindow = new BrowserWindow({
+        // 从本地存储读取上次的窗口大小
+        const savedBounds = localStorage.getItem('noro6-window-bounds');
+        let windowOptions = {
             width: 1400,
             height: 900,
             show: false,
@@ -279,13 +280,44 @@ export const reactClass = connect(state => ({
                 nodeIntegration: false,
                 contextIsolation: true
             }
-        });
+        };
+        
+        // 如果有保存的窗口大小，使用保存的值
+        if (savedBounds) {
+            try {
+                const bounds = JSON.parse(savedBounds);
+                windowOptions.width = bounds.width;
+                windowOptions.height = bounds.height;
+                if (bounds.x !== undefined && bounds.y !== undefined) {
+                    windowOptions.x = bounds.x;
+                    windowOptions.y = bounds.y;
+                }
+            } catch (e) {
+                console.error('Failed to parse saved window bounds:', e);
+            }
+        }
+        
+        // 在poi内部窗口打开
+        const newWindow = new BrowserWindow(windowOptions);
         
         newWindow.setMenuBarVisibility(false);
         
         newWindow.once('ready-to-show', () => {
             newWindow.show();
         });
+        
+        // 保存窗口大小和位置
+        const saveBounds = () => {
+            const bounds = newWindow.getBounds();
+            localStorage.setItem('noro6-window-bounds', JSON.stringify(bounds));
+        };
+        
+        // 监听窗口大小变化
+        newWindow.on('resize', saveBounds);
+        newWindow.on('move', saveBounds);
+        
+        // 窗口关闭时保存
+        newWindow.on('close', saveBounds);
         
         newWindow.loadURL(url);
     }
