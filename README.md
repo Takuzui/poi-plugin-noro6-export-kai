@@ -24,4 +24,5 @@ poi舰队导出插件，支持导出舰队配置到noro6制空权模拟器。
 
 ## 致谢
 
-本插件基于原作者 [oooo1111880](https://github.com/oooo1111880) 的 poi-plugin-noro6-export 修改而来，主要参考了 [KyoMiko](https://github.com/KyoMiko) 大佬的 poi-plugin-fleet-export 插件。
+
+本插件基于原作者 [oooo1111880](https://github.com/oooo1111880) 的 `poi-plugin-noro6-export` 修改而来，主要参考了 [KyoMiko](https://github.com/KyoMiko) 大佬的 `poi-plugin-fleet-export` 插件。
