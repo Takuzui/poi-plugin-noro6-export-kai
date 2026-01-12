@@ -1,15 +1,15 @@
 {
-    "name": "poi-plugin-noro6-export",
-    "version": "2.0.1",
+    "name": "poi-plugin-noro6-export-kai",
+    "version": "1.0.0",
     "main": "index.es",
     "description": "a plugin export ships and equips to noro6",
     "author": {
-        "name": "oooo1111880",
-        "url": "https://github.com/oooo1111880"
+        "name": "Takuzu",
+        "url": "https://github.com/Takuzu"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/oooo1111880/poi-plugin-noro6-export"
+        "url": "https://github.com/Takuzu/poi-plugin-noro6-export-kai"
     },
     "keywords": [
         "poi",
@@ -19,8 +19,8 @@
     ],
     "license": "MIT",
     "poiPlugin": {
-        "title": "艦娘 / 装備管理",
-        "description": "輸出艦娘/裝備信息至noro6制空權計算機的管理功能",
+        "title": "舰娘 / 装备管理",
+        "description": "导出舰娘/装备信息至noro6制空权计算器的管理功能",
         "icon": ""
     }
 }

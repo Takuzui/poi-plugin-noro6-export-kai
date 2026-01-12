@@ -61,10 +61,10 @@ export const reactClass = connect(state => ({
 
     state = { result: "" };
 
-    //艦娘資料輸出(包含未上鎖)
-    //另3function程式碼大致相同
+    //舰娘数据导出(包含未锁定)
+    //另外3个函数代码大致相同
     exportShipsAll = () => {
-        //讀取資料
+        //读取数据
         const ships = this.props.ships;
         let result = []
         Object.keys(ships).forEach((key) => {
@@ -74,7 +74,7 @@ export const reactClass = connect(state => ({
         let strResult = JSON.stringify(result)
         this.setState({ strResult })
 
-        //複製到剪貼簿
+        //复制到剪贴板
         copyToClipboard(strResult)
 
         return result;
@@ -82,7 +82,7 @@ export const reactClass = connect(state => ({
 
 
 
-    //艦娘資料輸出(不包含未上鎖)
+    //舰娘数据导出(不包含未锁定)
     exportShipsLocked = () => {
         const ships = this.props.ships;
         let result = []
@@ -96,7 +96,7 @@ export const reactClass = connect(state => ({
         let strResult = JSON.stringify(result)
         this.setState({ strResult })
 
-        //複製到剪貼簿
+        //复制到剪贴板
         copyToClipboard(strResult)
 
         return result;
@@ -104,7 +104,7 @@ export const reactClass = connect(state => ({
 
 
 
-    //裝備資料輸出(包含未上鎖)
+    //装备数据导出(包含未锁定)
     exportEquipsAll = () => {
         const equips = this.props.equips;
         let result = [];
@@ -123,7 +123,7 @@ export const reactClass = connect(state => ({
         let strResult = JSON.stringify(result);
         this.setState({ strResult });
 
-        // 複製到剪貼簿
+        // 复制到剪贴板
         copyToClipboard(strResult);
 
         return result;
@@ -131,7 +131,7 @@ export const reactClass = connect(state => ({
 
 
 
-    //裝備資料輸出(不包含未上鎖)
+    //装备数据导出(不包含未锁定)
     exportEquipsLocked = () => {
         const equips = this.props.equips;
         let result = `[`;
@@ -174,9 +174,20 @@ export const reactClass = connect(state => ({
 
         const url = `https://noro6.github.io/kc-web#import:{"predeck":{},"ships":${encodedShips},"items":${encodedEquips}}`;
 
-        const newWindow = new BrowserWindow({ show: false });
-
-        newWindow.maximize();
+        const newWindow = new BrowserWindow({
+            width: 1400,
+            height: 900,
+            frame: false,
+            show: false,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true
+            }
+        });
+        
+        newWindow.once('ready-to-show', () => {
+            newWindow.show();
+        });
         
         newWindow.loadURL(url);
     }
@@ -201,23 +212,23 @@ export const reactClass = connect(state => ({
         const result = this.state.result;
         return (
             <div>
-                <h2 className="mergin">制空権シミュレータ v2</h2>
+                <h2 className="mergin">制空权模拟器 v2</h2>
 
                 <br />
                 <br />
                 
                 <div className="buttonGroup">
                     <div className="groups">
-                        <h4>POI頁面</h4>
+                        <h4>POI页面</h4>
                         <Button className="openNewPageButton" onClick={this.openNewPage}>
-                            打開制空権計算機
+                            打开制空权计算机
                         </Button>
                     </div>
 
                     <div className="groups">
-                        <h4>可輸出至外部瀏覽器</h4>
+                        <h4>可导出至外部浏览器</h4>
                         <Button className="openNewPageButton" onClick={this.copyUrl}>
-                            複製輸出連結
+                            复制导出链接
                         </Button>
                     </div>
                 </div>
@@ -226,15 +237,15 @@ export const reactClass = connect(state => ({
                 <br />
 
                 <div>
-                    <h4 className="mergin">個別資料選用</h4>
+                    <h4 className="mergin">单独数据选用</h4>
                     
                     <div>
                         <Button className="customButton" onClick={this.exportShipsAll}>
-                            艦娘 : 未ロックも含める
+                            舰娘 : 包含未锁定
                         </Button>
                         
                         <Button className="customButton" onClick={this.exportShipsLocked}>
-                            艦娘 : ロック済みのみ&nbsp;&nbsp;&nbsp;
+                            舰娘 : 仅已锁定&nbsp;&nbsp;&nbsp;
                         </Button>
                     </div>
                     
@@ -242,11 +253,11 @@ export const reactClass = connect(state => ({
 
                     <div>
                         <Button className="customButton" onClick={this.exportEquipsAll}>
-                            裝備 : 未ロックも含める
+                            装备 : 包含未锁定
                         </Button>
 
                         <Button className="customButton" onClick={this.exportEquipsLocked}>
-                            裝備 : ロック済みのみ&nbsp;&nbsp;&nbsp;
+                            装备 : 仅已锁定&nbsp;&nbsp;&nbsp;
                         </Button>
                     </div>
                 </div>
