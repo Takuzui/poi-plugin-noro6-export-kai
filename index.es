@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, TextArea, ButtonGroup, Icon } from "@blueprintjs/core"
+import { Button, Radio, RadioGroup } from "@blueprintjs/core"
 import { connect } from 'react-redux'
 import { shell } from 'electron'
 export const windowMode = false;
@@ -59,7 +59,11 @@ export const reactClass = connect(state => ({
     equips: state.info.equips
 }))(class View extends Component {
 
-    state = { result: "" };
+    state = { 
+        result: "",
+        shipExportType: "all",
+        equipExportType: "all"
+    };
 
     //舰娘数据导出(包含未锁定)
     //另外3个函数代码大致相同
@@ -177,13 +181,15 @@ export const reactClass = connect(state => ({
         const newWindow = new BrowserWindow({
             width: 1400,
             height: 900,
-            frame: false,
             show: false,
+            autoHideMenuBar: true,
             webPreferences: {
                 nodeIntegration: false,
                 contextIsolation: true
             }
         });
+        
+        newWindow.setMenuBarVisibility(false);
         
         newWindow.once('ready-to-show', () => {
             newWindow.show();
@@ -239,26 +245,40 @@ export const reactClass = connect(state => ({
                 <div>
                     <h4 className="mergin">单独数据选用</h4>
                     
-                    <div>
-                        <Button className="customButton" onClick={this.exportShipsAll}>
-                            舰娘 : 包含未锁定
-                        </Button>
-                        
-                        <Button className="customButton" onClick={this.exportShipsLocked}>
-                            舰娘 : 仅已锁定&nbsp;&nbsp;&nbsp;
-                        </Button>
+                    <div style={{ marginLeft: '10px', marginBottom: '15px' }}>
+                        <label style={{ fontWeight: 500, marginBottom: '8px', display: 'block' }}>舰娘数据</label>
+                        <RadioGroup
+                            onChange={(e) => {
+                                this.setState({ shipExportType: e.target.value });
+                                if (e.target.value === 'all') {
+                                    this.exportShipsAll();
+                                } else {
+                                    this.exportShipsLocked();
+                                }
+                            }}
+                            selectedValue={this.state.shipExportType}
+                        >
+                            <Radio label="包含未锁定" value="all" />
+                            <Radio label="仅已锁定" value="locked" />
+                        </RadioGroup>
                     </div>
                     
-                    <br />
-
-                    <div>
-                        <Button className="customButton" onClick={this.exportEquipsAll}>
-                            装备 : 包含未锁定
-                        </Button>
-
-                        <Button className="customButton" onClick={this.exportEquipsLocked}>
-                            装备 : 仅已锁定&nbsp;&nbsp;&nbsp;
-                        </Button>
+                    <div style={{ marginLeft: '10px' }}>
+                        <label style={{ fontWeight: 500, marginBottom: '8px', display: 'block' }}>装备数据</label>
+                        <RadioGroup
+                            onChange={(e) => {
+                                this.setState({ equipExportType: e.target.value });
+                                if (e.target.value === 'all') {
+                                    this.exportEquipsAll();
+                                } else {
+                                    this.exportEquipsLocked();
+                                }
+                            }}
+                            selectedValue={this.state.equipExportType}
+                        >
+                            <Radio label="包含未锁定" value="all" />
+                            <Radio label="仅已锁定" value="locked" />
+                        </RadioGroup>
                     </div>
                 </div>
             </div>

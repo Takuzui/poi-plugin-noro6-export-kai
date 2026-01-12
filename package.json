@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Takuzu/poi-plugin-noro6-export-kai"
+        "url": "git+https://github.com/Takuzui/poi-plugin-noro6-export-kai.git"
     },
     "keywords": [
         "poi",
@@ -19,7 +19,7 @@
     ],
     "license": "MIT",
     "poiPlugin": {
-        "title": "舰娘 / 装备管理",
+        "title": "noro6导出",
         "description": "导出舰娘/装备信息至noro6制空权计算器的管理功能",
         "icon": ""
     }
