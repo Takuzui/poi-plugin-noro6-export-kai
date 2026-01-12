@@ -333,7 +333,7 @@ export const reactClass = connect(state => ({
                             checked={this.state.activityAirbaseOnly} 
                             onChange={(e) => this.setState({ activityAirbaseOnly: e.target.checked })}
                         />
-                        {' '}{__('Export Event Airbase Only')}
+                        {' '}{__('Export Event Airbase')}
                     </label>
                 </div>
 
