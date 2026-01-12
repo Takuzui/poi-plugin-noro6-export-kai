@@ -55,15 +55,111 @@ const copyToClipboard = (result) => {
 
 
 export const reactClass = connect(state => ({
+    hqlv: state.info.basic.api_level,
+    fleets: state.info.fleets,
     ships: state.info.ships,
-    equips: state.info.equips
+    equips: state.info.equips,
+    airbases: state.info.airbase
 }))(class View extends Component {
 
     state = { 
         result: "",
         shipExportType: "all",
-        equipExportType: "all"
+        equipExportType: "all",
+        activityAirbaseOnly: true
     };
+
+    //导出舰队和陆航信息
+    exportFleet = () => {
+        const fleets = this.props.fleets;
+        const ships = this.props.ships;
+        const equips = this.props.equips;
+        const airbases = this.props.airbases;
+        let result = `{"version": 4,"hqlv":${this.props.hqlv},`;
+
+        //遍历母港中的舰队并且生成json
+        for (let i = 0; i < fleets.length; i++) {
+            const fleet = fleets[i];
+            result += `"f${i + 1}":{`;
+            //遍历舰队中的船只
+            for (let j = 0; j < fleet.api_ship.length; j++) {
+                if (ships[fleet.api_ship[j]]) {
+                    const ship = ships[fleet.api_ship[j]];
+                    result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]},"items":{`;
+                    //遍历船只的装备
+                    for (let k = 0; k < ship.api_slot.length; k++) {
+                        const slot = ship.api_slot[k];
+                        if (equips[slot]) {
+                            const equip = equips[slot];
+                            result += `"i${k + 1}":{"id":${equip.api_slotitem_id},"rf":${equip.api_level}`
+                            if (equip.api_alv) {
+                                result += `,"mas":${equip.api_alv}`
+                            }
+                            result += `},`
+                        }
+                    }
+                    //查看是否存在额外装备（孔）
+                    if (equips[ship.api_slot_ex]) {
+                        const equip = equips[ship.api_slot_ex]
+                        result += `"ix":{"id":${equip.api_slotitem_id},"rf":${equip.api_level}`
+                        if (equip.api_alv) {
+                            result += `,"mas":${equip.api_alv}`
+                        }
+                        result += `}`
+                    }
+                    //去除最后的逗号并且补上items的后括号
+                    if (result.charAt(result.length - 1) == ',') {
+                        result = result.slice(0, result.length - 1) + `}`
+                    } else {
+                        result += `}`
+                    }
+                    //补上ships的后括号
+                    result += `},`
+                }
+            }
+            //去除最后的逗号并且补上fleets的后括号
+            if (result.charAt(result.length - 1) == ',') {
+                result = result.slice(0, result.length - 1) + `},`
+            } else {
+                result += `},`
+            }
+        }
+        //遍历陆航中的航空中队
+        let airbase_cnt = 0;
+        for (let i = 0; i < airbases.length; i++) {
+            const airbase = airbases[i];
+            if (this.state.activityAirbaseOnly && airbase.api_area_id < 30) continue;
+            airbase_cnt += 1;
+            result += `"a${airbase_cnt}":{"items": {`;
+            //遍历航空中队中的飞机
+            for (let j = 0; j < airbase.api_plane_info.length; j++) {
+                const plane = airbase.api_plane_info[j];
+                if (equips[plane.api_slotid]) {
+                    const equip = equips[plane.api_slotid]
+                    result += `"i${j + 1}":{"id":${equip.api_slotitem_id},"rf":${equip.api_level}`
+                    if (equip.api_alv) {
+                        result += `,"mas":${equip.api_alv}`
+                    }
+                    result += `},`
+                }
+            }
+            //去除最后的逗号并且补上items的后括号
+            if (result.charAt(result.length - 1) == ',') {
+                result = result.slice(0, result.length - 1) + `},`
+            } else {
+                result += `},`
+            }
+            //加上航空中队的行动状态
+            result += `"mode":${airbase.api_action_kind}},`
+        }
+        //去除最后的逗号并且补上json字符串的后括号
+        if (result.charAt(result.length - 1) == ',') {
+            result = result.slice(0, result.length - 1) + `}`
+        } else {
+            result += `}`
+        }
+        return result;
+    }
 
     //舰娘数据导出(包含未锁定)
     //另外3个函数代码大致相同
@@ -170,13 +266,8 @@ export const reactClass = connect(state => ({
 
 
     openNewPage = () => {
-        const ships = this.exportShipsAll();
-        const equips = this.exportEquipsAll();
-
-        const encodedShips = JSON.stringify(ships);
-        const encodedEquips = JSON.stringify(equips);
-
-        const url = `https://noro6.github.io/kc-web#import:{"predeck":{},"ships":${encodedShips},"items":${encodedEquips}}`;
+        const result = this.exportFleet();
+        const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
 
         const newWindow = new BrowserWindow({
             width: 1400,
@@ -201,14 +292,8 @@ export const reactClass = connect(state => ({
 
 
     copyUrl = () => {
-        const ships = this.exportShipsAll();
-        const equips = this.exportEquipsAll();
-
-        const encodedShips = JSON.stringify(ships);
-        const encodedEquips = JSON.stringify(equips);
-
-        const url = `https://noro6.github.io/kc-web#import:{"predeck":{},"ships":${encodedShips},"items":${encodedEquips}}`;
-
+        const result = this.exportFleet();
+        const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
         copyToClipboard(url);
     }
 
@@ -217,29 +302,44 @@ export const reactClass = connect(state => ({
     render() {
         const result = this.state.result;
         return (
-            <div>
-                <h2>制空权模拟器 v2</h2>
-                
-                <div>
-                    <h4>POI页面</h4>
-                    <Button onClick={this.openNewPage}>
+            <div style={{ padding: '10px' }}>
+                <div style={{ marginBottom: '20px' }}>
+                    <Button 
+                        intent="primary" 
+                        large 
+                        fill
+                        onClick={this.openNewPage}
+                    >
                         打开制空权模拟器
                     </Button>
                 </div>
 
-                <div>
-                    <h4>可导出至外部浏览器</h4>
-                    <Button onClick={this.copyUrl}>
+                <div style={{ marginBottom: '20px' }}>
+                    <Button 
+                        large 
+                        fill
+                        onClick={this.copyUrl}
+                    >
                         复制导出链接
                     </Button>
                 </div>
 
-                <div>
-                    <h4>单独数据选用</h4>
-                    
-                    <div>
-                        <label>舰娘数据</label>
+                <div style={{ marginBottom: '20px' }}>
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            checked={this.state.activityAirbaseOnly} 
+                            onChange={(e) => this.setState({ activityAirbaseOnly: e.target.checked })}
+                        />
+                        {' '}仅导出活动海域基地航空队
+                    </label>
+                </div>
+
+                <div style={{ marginTop: '30px' }}>
+                    <div style={{ marginBottom: '15px' }}>
+                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>舰娘数据</div>
                         <RadioGroup
+                            inline
                             onChange={(e) => {
                                 this.setState({ shipExportType: e.target.value });
                                 if (e.target.value === 'all') {
@@ -255,9 +355,10 @@ export const reactClass = connect(state => ({
                         </RadioGroup>
                     </div>
                     
-                    <div>
-                        <label>装备数据</label>
+                    <div style={{ marginBottom: '15px' }}>
+                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>装备数据</div>
                         <RadioGroup
+                            inline
                             onChange={(e) => {
                                 this.setState({ equipExportType: e.target.value });
                                 if (e.target.value === 'all') {
