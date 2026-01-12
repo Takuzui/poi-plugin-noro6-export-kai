@@ -1,6 +1,6 @@
 {
     "name": "poi-plugin-noro6-export-kai",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "main": "index.es",
     "description": "a plugin export ships and equips to noro6",
     "author": {
@@ -19,8 +19,9 @@
     ],
     "license": "MIT",
     "poiPlugin": {
-        "title": "noro6导出",
-        "description": "导出舰娘/装备信息至noro6制空权模拟器的管理功能",
-        "icon": "fa-fighter-jet"
+        "title": "plugin.title",
+        "description": "plugin.description",
+        "icon": "fa-fighter-jet",
+        "i18nDir": "i18n"
     }
 }

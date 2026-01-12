@@ -1,4 +1,11 @@
 {
-    "Fleet Export": "导出舰队",
-    "a plugin export fleet to noro6 or jervis": "提供noro6格式的舰队导出"
+    "plugin.title": "制空模拟",
+    "plugin.description": "导出舰娘/装备信息至noro6制空权模拟器的管理功能",
+    "Open Air Control Simulator": "打开制空权模拟器",
+    "Copy Export Link": "复制导出链接",
+    "Export Event Airbase": "导出活动海域基地航空队",
+    "Ship Data": "舰娘数据",
+    "Equipment Data": "装备数据",
+    "Locked Only": "仅已锁定",
+    "Include Unlocked": "包含未锁定"
 }

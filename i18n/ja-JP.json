@@ -1,0 +1,11 @@
+{
+    "plugin.title": "制空シミュレータ",
+    "plugin.description": "noro6制空権シミュレータに艦娘/装備情報をエクスポート",
+    "Open Air Control Simulator": "制空権シミュレータを開く",
+    "Copy Export Link": "エクスポートリンクをコピー",
+    "Export Event Airbase": "イベント海域基地航空隊をエクスポート",
+    "Ship Data": "艦娘データ",
+    "Equipment Data": "装備データ",
+    "Locked Only": "ロック済みのみ",
+    "Include Unlocked": "未ロックも含める"
+}

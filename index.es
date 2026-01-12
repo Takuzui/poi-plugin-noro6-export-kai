@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { shell } from 'electron'
 export const windowMode = false;
 const { BrowserWindow } = require('electron').remote;
-import './index.css';
+const { i18n } = window;
 
 
 const parseShip = (ship) => {
@@ -64,8 +64,8 @@ export const reactClass = connect(state => ({
 
     state = { 
         result: "",
-        shipExportType: "all",
-        equipExportType: "all",
+        shipExportType: "locked",
+        equipExportType: "locked",
         activityAirbaseOnly: true
     };
 
@@ -268,7 +268,8 @@ export const reactClass = connect(state => ({
     openNewPage = () => {
         const result = this.exportFleet();
         const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
-
+        
+        // 在poi内部窗口打开
         const newWindow = new BrowserWindow({
             width: 1400,
             height: 900,
@@ -301,6 +302,7 @@ export const reactClass = connect(state => ({
 
     render() {
         const result = this.state.result;
+        const __ = i18n['poi-plugin-noro6-export-kai'].__.bind(i18n['poi-plugin-noro6-export-kai']);
         return (
             <div style={{ padding: '10px' }}>
                 <div style={{ marginBottom: '20px' }}>
@@ -310,7 +312,7 @@ export const reactClass = connect(state => ({
                         fill
                         onClick={this.openNewPage}
                     >
-                        打开制空权模拟器
+                        {__('Open Air Control Simulator')}
                     </Button>
                 </div>
 
@@ -320,7 +322,7 @@ export const reactClass = connect(state => ({
                         fill
                         onClick={this.copyUrl}
                     >
-                        复制导出链接
+                        {__('Copy Export Link')}
                     </Button>
                 </div>
 
@@ -331,13 +333,13 @@ export const reactClass = connect(state => ({
                             checked={this.state.activityAirbaseOnly} 
                             onChange={(e) => this.setState({ activityAirbaseOnly: e.target.checked })}
                         />
-                        {' '}仅导出活动海域基地航空队
+                        {' '}{__('Export Event Airbase Only')}
                     </label>
                 </div>
 
                 <div style={{ marginTop: '30px' }}>
                     <div style={{ marginBottom: '15px' }}>
-                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>舰娘数据</div>
+                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Ship Data')}</div>
                         <RadioGroup
                             inline
                             onChange={(e) => {
@@ -350,13 +352,13 @@ export const reactClass = connect(state => ({
                             }}
                             selectedValue={this.state.shipExportType}
                         >
-                            <Radio label="包含未锁定" value="all" />
-                            <Radio label="仅已锁定" value="locked" />
+                            <Radio label={__('Locked Only')} value="locked" />
+                            <Radio label={__('Include Unlocked')} value="all" />
                         </RadioGroup>
                     </div>
                     
                     <div style={{ marginBottom: '15px' }}>
-                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>装备数据</div>
+                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Equipment Data')}</div>
                         <RadioGroup
                             inline
                             onChange={(e) => {
@@ -369,8 +371,8 @@ export const reactClass = connect(state => ({
                             }}
                             selectedValue={this.state.equipExportType}
                         >
-                            <Radio label="包含未锁定" value="all" />
-                            <Radio label="仅已锁定" value="locked" />
+                            <Radio label={__('Locked Only')} value="locked" />
+                            <Radio label={__('Include Unlocked')} value="all" />
                         </RadioGroup>
                     </div>
                 </div>

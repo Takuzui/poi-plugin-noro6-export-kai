@@ -1,0 +1,11 @@
+{
+    "plugin.title": "制空模擬",
+    "plugin.description": "匯出艦娘/裝備資訊至noro6制空權模擬器的管理功能",
+    "Open Air Control Simulator": "打開制空權模擬器",
+    "Copy Export Link": "複製匯出連結",
+    "Export Event Airbase": "匯出活動海域基地航空隊",
+    "Ship Data": "艦娘資料",
+    "Equipment Data": "裝備資料",
+    "Locked Only": "僅已鎖定",
+    "Include Unlocked": "包含未鎖定"
+}
