@@ -71,7 +71,7 @@ export const reactClass = connect(state => ({
     state = { 
         result: "",
         shipExportType: "locked",
-        equipExportType: "locked",
+        equipExportType: "all",
         airbaseAreaId: "event"  // "event" (活动海域, >=30), "central" (中部海域, 6), "southwest" (南西海域, 7)
     };
 
