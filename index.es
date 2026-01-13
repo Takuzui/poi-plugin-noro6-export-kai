@@ -21,6 +21,11 @@ const parseShip = (ship) => {
         tempObj.area = ship.api_sally_area
     }
 
+    // 添加缎带信息
+    if (ship.api_backs) {
+        tempObj.backs = ship.api_backs
+    }
+
     return tempObj;
 }
 
@@ -85,7 +90,19 @@ export const reactClass = connect(state => ({
             for (let j = 0; j < fleet.api_ship.length; j++) {
                 if (ships[fleet.api_ship[j]]) {
                     const ship = ships[fleet.api_ship[j]];
-                    result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]},"items":{`;
+                    result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]}`;
+                    
+                    // 添加活动图贴条
+                    if (ship.api_sally_area) {
+                        result += `,"area":${ship.api_sally_area}`;
+                    }
+                    
+                    // 添加缎带
+                    if (ship.api_backs) {
+                        result += `,"backs":${ship.api_backs}`;
+                    }
+                    
+                    result += `,"items":{`;
                     //遍历船只的装备
                     for (let k = 0; k < ship.api_slot.length; k++) {
                         const slot = ship.api_slot[k];
@@ -172,7 +189,7 @@ export const reactClass = connect(state => ({
             result.push(parseShip(ship))
         })
         let strResult = JSON.stringify(result)
-        this.setState({ strResult })
+        this.setState({ result: strResult })
 
         //复制到剪贴板
         copyToClipboard(strResult)
@@ -188,13 +205,14 @@ export const reactClass = connect(state => ({
         let result = []
         Object.values(ships)
             .filter(ship => {
-                return ship.api_locked == "1"
+                // 修复：兼容数字和字符串类型的锁定状态
+                return ship.api_locked == "1" || ship.api_locked == 1
             }).forEach(ship => {
                 result.push(parseShip(ship))
             })
 
         let strResult = JSON.stringify(result)
-        this.setState({ strResult })
+        this.setState({ result: strResult })
 
         //复制到剪贴板
         copyToClipboard(strResult)
@@ -221,7 +239,7 @@ export const reactClass = connect(state => ({
         });
 
         let strResult = JSON.stringify(result);
-        this.setState({ strResult });
+        this.setState({ result: strResult });
 
         // 复制到剪贴板
         copyToClipboard(strResult);
@@ -240,7 +258,8 @@ export const reactClass = connect(state => ({
         for (let j = 0; j < len; j++) {
             if (equips[j]) {
                 const equip = equips[j];
-                if (equip.api_locked == "0") {
+                // 修复：只有当api_locked明确为1或"1"时才认为是锁定状态
+                if (equip.api_locked != "1" && equip.api_locked != 1) {
                     continue;
                 }
                 if(equip.api_level == undefined) {
@@ -266,8 +285,43 @@ export const reactClass = connect(state => ({
 
 
     openNewPage = () => {
-        const result = this.exportFleet();
-        const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
+        const fleetData = this.exportFleet();
+        
+        // 根据当前选择导出舰娘数据
+        let ships;
+        if (this.state.shipExportType === 'all') {
+            ships = Object.keys(this.props.ships).map(key => parseShip(this.props.ships[key]));
+        } else {
+            ships = Object.values(this.props.ships)
+                .filter(ship => ship.api_locked == "1" || ship.api_locked == 1)
+                .map(ship => parseShip(ship));
+        }
+        
+        // 根据当前选择导出装备数据
+        let items;
+        if (this.state.equipExportType === 'all') {
+            items = [];
+            Object.keys(this.props.equips).forEach((key) => {
+                const equip = this.props.equips[key];
+                if (equip) {
+                    items.push({ "id": equip.api_slotitem_id, "lv": equip.api_level || 0 });
+                }
+            });
+        } else {
+            items = [];
+            const len = Object.keys(this.props.equips).pop();
+            for (let j = 0; j < len; j++) {
+                const equip = this.props.equips[j];
+                if (equip && (equip.api_locked == "1" || equip.api_locked == 1)) {
+                    items.push({ "id": equip.api_slotitem_id, "lv": equip.api_level || 0 });
+                }
+            }
+        }
+
+        // 构建完整的导入数据对象
+        const predeck = JSON.parse(fleetData);
+        const importData = { predeck, ships, items };
+        const url = `https://noro6.github.io/kc-web#import:${JSON.stringify(importData)}`;
         
         // 从本地存储读取上次的窗口大小
         const savedBounds = localStorage.getItem('noro6-window-bounds');
@@ -325,8 +379,8 @@ export const reactClass = connect(state => ({
 
 
     copyUrl = () => {
-        const result = this.exportFleet();
-        const url = `https://noro6.github.io/kc-web/?predeck=${result}`;
+        const fleetData = this.exportFleet();
+        const url = `https://noro6.github.io/kc-web/?predeck=${fleetData}`;
         copyToClipboard(url);
     }
 
