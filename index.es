@@ -72,7 +72,7 @@ export const reactClass = connect(state => ({
         result: "",
         shipExportType: "locked",
         equipExportType: "locked",
-        activityAirbaseOnly: true
+        airbaseAreaId: "event"  // "event" (活动海域, >=30), "central" (中部海域, 6), "southwest" (南西海域, 7)
     };
 
     //导出舰队和陆航信息
@@ -147,7 +147,11 @@ export const reactClass = connect(state => ({
         let airbase_cnt = 0;
         for (let i = 0; i < airbases.length; i++) {
             const airbase = airbases[i];
-            if (this.state.activityAirbaseOnly && airbase.api_area_id < 30) continue;
+            // 根据选择的海域筛选陆航
+            const areaId = this.state.airbaseAreaId;
+            if (areaId === "event" && airbase.api_area_id < 30) continue;
+            if (areaId === "central" && airbase.api_area_id !== 6) continue;
+            if (areaId === "southwest" && airbase.api_area_id !== 7) continue;
             airbase_cnt += 1;
             result += `"a${airbase_cnt}":{"items": {`;
             //遍历航空中队中的飞机
@@ -415,14 +419,15 @@ export const reactClass = connect(state => ({
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label>
-                        <input 
-                            type="checkbox" 
-                            checked={this.state.activityAirbaseOnly} 
-                            onChange={(e) => this.setState({ activityAirbaseOnly: e.target.checked })}
-                        />
-                        {' '}{__('Export Event Airbase')}
-                    </label>
+                    <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Airbase Area')}</div>
+                    <RadioGroup
+                        onChange={(e) => this.setState({ airbaseAreaId: e.target.value })}
+                        selectedValue={this.state.airbaseAreaId}
+                    >
+                        <Radio label={__('Event Airbase')} value="event" />
+                        <Radio label={__('Central Airbase')} value="central" />
+                        <Radio label={__('Southwest Airbase')} value="southwest" />
+                    </RadioGroup>
                 </div>
 
                 <div style={{ marginTop: '30px' }}>
