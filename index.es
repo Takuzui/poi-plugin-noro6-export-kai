@@ -10,20 +10,21 @@ const { i18n } = window;
 const parseShip = (ship) => {
     let tempObj =
     {
-        "id": ship.api_ship_id,
-        "lv": ship.api_lv,
-        "st": ship.api_kyouka,
-        "exp": ship.api_exp,
-        "ex": ship.api_slot_ex
+        "api_ship_id": ship.api_ship_id,
+        "api_lv": ship.api_lv,
+        "api_kyouka": ship.api_kyouka,
+        "api_exp": ship.api_exp,
+        "api_slot_ex": ship.api_slot_ex
     }
-
-    if (ship.api_sally_area) {
-        tempObj.area = ship.api_sally_area
+    
+    // 活动贴条只在存在时添加
+    if (ship.api_sally_area !== undefined) {
+        tempObj.api_sally_area = ship.api_sally_area;
     }
-
-    // 添加缎带信息
-    if (ship.api_backs) {
-        tempObj.backs = ship.api_backs
+    
+    // 添加缎带信息 (api_sp_effect_items)
+    if (ship.api_sp_effect_items && ship.api_sp_effect_items.length) {
+        tempObj.api_sp_effect_items = ship.api_sp_effect_items;
     }
 
     return tempObj;
@@ -92,14 +93,15 @@ export const reactClass = connect(state => ({
                     const ship = ships[fleet.api_ship[j]];
                     result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]}`;
                     
-                    // 添加活动图贴条
-                    if (ship.api_sally_area) {
-                        result += `,"area":${ship.api_sally_area}`;
-                    }
-                    
-                    // 添加缎带
-                    if (ship.api_backs) {
-                        result += `,"backs":${ship.api_backs}`;
+                    // 添加缎带信息 (spi 格式用于 DeckBuilder)
+                    if (ship.api_sp_effect_items && ship.api_sp_effect_items.length) {
+                        result += `,"spi":${JSON.stringify(ship.api_sp_effect_items.map(item => ({
+                            kind: item.api_kind,
+                            fp: item.api_kind === 2 ? 2 : 0,
+                            tp: 1,
+                            ar: 1,
+                            ev: item.api_kind === 2 ? 2 : 0
+                        })))}`;
                     }
                     
                     result += `,"items":{`;
