@@ -392,6 +392,24 @@ export const reactClass = connect(state => ({
 
 
 
+    // 从外部浏览器打开noro6，只导出舰队配置和陆航
+    openNoro6External = () => {
+        const fleetData = this.exportFleet();
+        const url = `https://noro6.github.io/kc-web/?predeck=${fleetData}`;
+        shell.openExternal(url);
+    }
+
+
+
+    // 从外部浏览器打开jervis，只导出舰队配置和陆航
+    openJervisExternal = () => {
+        const fleetData = this.exportFleet();
+        const url = `https://jervis.vercel.app/?predeck=${fleetData}`;
+        shell.openExternal(url);
+    }
+
+
+
     render() {
         const result = this.state.result;
         const __ = i18n['poi-plugin-noro6-export-kai'].__.bind(i18n['poi-plugin-noro6-export-kai']);
@@ -408,6 +426,23 @@ export const reactClass = connect(state => ({
                     </Button>
                 </div>
 
+                <div style={{ marginBottom: '20px', display: 'flex' }}>
+                    <Button 
+                        large 
+                        style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                        onClick={this.openNoro6External}
+                    >
+                        {__('Open noro6')}
+                    </Button>
+                    <Button 
+                        large 
+                        style={{ flex: 1, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                        onClick={this.openJervisExternal}
+                    >
+                        {__('Open Jervis')}
+                    </Button>
+                </div>
+
                 <div style={{ marginBottom: '20px' }}>
                     <Button 
                         large 
@@ -418,19 +453,20 @@ export const reactClass = connect(state => ({
                     </Button>
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                    <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Airbase Area')}</div>
-                    <RadioGroup
-                        onChange={(e) => this.setState({ airbaseAreaId: e.target.value })}
-                        selectedValue={this.state.airbaseAreaId}
-                    >
-                        <Radio label={__('Event Airbase')} value="event" />
-                        <Radio label={__('Central Airbase')} value="central" />
-                        <Radio label={__('Southwest Airbase')} value="southwest" />
-                    </RadioGroup>
-                </div>
-
                 <div style={{ marginTop: '30px' }}>
+                    <div style={{ marginBottom: '15px' }}>
+                        <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Airbase Area')}</div>
+                        <RadioGroup
+                            inline
+                            onChange={(e) => this.setState({ airbaseAreaId: e.target.value })}
+                            selectedValue={this.state.airbaseAreaId}
+                        >
+                            <Radio label={__('Event Airbase')} value="event" />
+                            <Radio label={__('Central Airbase')} value="central" />
+                            <Radio label={__('Southwest Airbase')} value="southwest" />
+                        </RadioGroup>
+                    </div>
+                    
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ marginBottom: '8px', fontWeight: 500 }}>{__('Ship Data')}</div>
                         <RadioGroup
