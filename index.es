@@ -4,11 +4,9 @@ import { connect } from 'react-redux'
 import { shell } from 'electron'
 export const windowMode = false;
 const { BrowserWindow } = require('electron').remote;
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { format: formatUrl } = require('url');
+const LZString = require('lz-string');
 const { i18n } = window;
+const PROF_LEVEL_BORDER = [0, 10, 25, 40, 55, 70, 85, 100, 120];
 
 
 const parseShip = (ship) => {
@@ -55,41 +53,6 @@ const parseEquip = (equip) => {
 
 const createNoro6ImportUrl = (importData) =>
     `https://noro6.github.io/kc-web#import:${JSON.stringify(importData)}`;
-
-
-
-const openLongUrlExternal = (targetUrl) => {
-    const bridgePath = path.join(
-        os.tmpdir(),
-        `poi-noro6-import-${Date.now()}-${Math.random().toString(16).slice(2)}.html`
-    );
-    const serializedUrl = JSON.stringify(targetUrl).replace(/</g, '\\u003c');
-    const bridgeHtml = `<!doctype html>
-<meta charset="utf-8">
-<title>Opening noro6...</title>
-<p>Opening noro6...</p>
-<script>window.location.replace(${serializedUrl});</script>`;
-
-    fs.writeFileSync(bridgePath, bridgeHtml, 'utf8');
-
-    const bridgeUrl = formatUrl({
-        protocol: 'file:',
-        slashes: true,
-        pathname: bridgePath
-    });
-
-    Promise.resolve(shell.openExternal(bridgeUrl))
-        .then(() => {
-            // Give the external browser enough time to read the bridge file.
-            setTimeout(() => {
-                fs.unlink(bridgePath, () => {});
-            }, 60000);
-        })
-        .catch((error) => {
-            fs.unlink(bridgePath, () => {});
-            console.error('Failed to open noro6 in the external browser:', error);
-        });
-}
 
 
 
@@ -368,9 +331,114 @@ export const reactClass = connect(state => ({
 
 
 
+    getSelectedAirbases = () => {
+        return this.props.airbases.filter((airbase) => {
+            const areaId = this.state.airbaseAreaId;
+            if (areaId === "event") return airbase.api_area_id >= 30;
+            if (areaId === "central") return airbase.api_area_id === 6;
+            if (areaId === "southwest") return airbase.api_area_id === 7;
+            return false;
+        });
+    }
+
+
+
+    getNoro6SavedItem = (equip, slot) => {
+        const item = { i: equip ? equip.api_slotitem_id : 0 };
+
+        if (equip && equip.api_level) {
+            item.r = equip.api_level;
+        }
+        if (equip && equip.api_alv) {
+            item.l = PROF_LEVEL_BORDER[equip.api_alv] || 0;
+        }
+        if (slot !== undefined) {
+            item.s = slot;
+        }
+
+        return item;
+    }
+
+
+
+    buildNoro6SaveData = () => {
+        const equips = this.props.equips;
+        const fleets = this.props.fleets.map((fleet) => {
+            const ships = fleet.api_ship
+                .map(shipId => this.props.ships[shipId])
+                .filter(Boolean)
+                .map((ship) => {
+                    const savedShip = {
+                        i: ship.api_ship_id,
+                        is: ship.api_slot.map((slotId, slotIndex) =>
+                            this.getNoro6SavedItem(
+                                equips[slotId],
+                                ship.api_onslot ? ship.api_onslot[slotIndex] : undefined
+                            )
+                        ),
+                        ex: this.getNoro6SavedItem(equips[ship.api_slot_ex]),
+                        ac: true,
+                        es: false,
+                        re: !!ship.api_slot_ex,
+                        lv: ship.api_lv,
+                        lu: ship.api_lucky[0],
+                        un: ship.api_id
+                    };
+
+                    if (ship.api_maxhp) {
+                        savedShip.hp = ship.api_maxhp;
+                    }
+                    if (ship.api_sally_area !== undefined) {
+                        savedShip.ar = ship.api_sally_area;
+                    }
+                    if (ship.api_sp_effect_items && ship.api_sp_effect_items.length) {
+                        savedShip.sp = ship.api_sp_effect_items[0].api_kind;
+                    }
+
+                    return savedShip;
+                });
+
+            return { ships, isUnion: false };
+        });
+
+        const airbases = this.getSelectedAirbases().map(airbase => ({
+            items: airbase.api_plane_info.map((plane) => {
+                const equip = equips[plane.api_slotid];
+                return this.getNoro6SavedItem(equip, plane.api_count);
+            }),
+            battleTarget: [],
+            mode: airbase.api_action_kind
+        }));
+
+        const manager = {
+            isDefense: false,
+            airbaseInfo: {
+                airbases,
+                difficultyLevel: 0,
+                isDefense: false
+            },
+            battleInfo: {
+                fleets: [],
+                battleCount: 1
+            },
+            fleetInfo: {
+                fleets,
+                admiralLevel: this.props.hqlv,
+                isUnion: false,
+                fleetType: 0,
+                mainFleetIndex: 0
+            },
+            mainBattle: 0
+        };
+
+        return LZString.compressToEncodedURIComponent(JSON.stringify(manager));
+    }
+
+
+
     buildNoro6ImportData = (includeItems = true) => {
         const importData = {
-            predeck: JSON.parse(this.exportFleet()),
+            saveData: this.buildNoro6SaveData(),
             ships: this.getShipsForExport()
         };
 
@@ -450,11 +518,10 @@ export const reactClass = connect(state => ({
 
 
 
-    // 从外部浏览器打开noro6，导出舰队、舰娘（含贴条）和装备。
-    // 使用本地中转页规避系统直接打开超长URL时的长度限制。
+    // 从外部浏览器直接打开noro6，不使用剪贴板或本地中转文件。
     openNoro6External = () => {
         const url = createNoro6ImportUrl(this.buildNoro6ImportData());
-        openLongUrlExternal(url);
+        shell.openExternal(url);
     }
 
 
