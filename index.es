@@ -4,12 +4,17 @@ import { connect } from 'react-redux'
 import { shell } from 'electron'
 export const windowMode = false;
 const { BrowserWindow } = require('electron').remote;
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { format: formatUrl } = require('url');
 const { i18n } = window;
 
 
 const parseShip = (ship) => {
     let tempObj =
     {
+        "api_id": ship.api_id,
         "api_ship_id": ship.api_ship_id,
         "api_lv": ship.api_lv,
         "api_kyouka": ship.api_kyouka,
@@ -44,6 +49,46 @@ const parseEquip = (equip) => {
     }
 
     return tempObj;
+}
+
+
+
+const createNoro6ImportUrl = (importData) =>
+    `https://noro6.github.io/kc-web#import:${JSON.stringify(importData)}`;
+
+
+
+const openLongUrlExternal = (targetUrl) => {
+    const bridgePath = path.join(
+        os.tmpdir(),
+        `poi-noro6-import-${Date.now()}-${Math.random().toString(16).slice(2)}.html`
+    );
+    const serializedUrl = JSON.stringify(targetUrl).replace(/</g, '\\u003c');
+    const bridgeHtml = `<!doctype html>
+<meta charset="utf-8">
+<title>Opening noro6...</title>
+<p>Opening noro6...</p>
+<script>window.location.replace(${serializedUrl});</script>`;
+
+    fs.writeFileSync(bridgePath, bridgeHtml, 'utf8');
+
+    const bridgeUrl = formatUrl({
+        protocol: 'file:',
+        slashes: true,
+        pathname: bridgePath
+    });
+
+    Promise.resolve(shell.openExternal(bridgeUrl))
+        .then(() => {
+            // Give the external browser enough time to read the bridge file.
+            setTimeout(() => {
+                fs.unlink(bridgePath, () => {});
+            }, 60000);
+        })
+        .catch((error) => {
+            fs.unlink(bridgePath, () => {});
+            console.error('Failed to open noro6 in the external browser:', error);
+        });
 }
 
 
@@ -93,6 +138,11 @@ export const reactClass = connect(state => ({
                     const ship = ships[fleet.api_ship[j]];
                     result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]}`;
                     
+                    // DeckBuilder扩展字段：保留活动贴条，不改变原有predeck链接格式。
+                    if (ship.api_sally_area !== undefined) {
+                        result += `,"area":${ship.api_sally_area}`;
+                    }
+
                     // 添加缎带信息 (spi 格式用于 DeckBuilder)
                     if (ship.api_sp_effect_items && ship.api_sp_effect_items.length) {
                         result += `,"spi":${JSON.stringify(ship.api_sp_effect_items.map(item => ({
@@ -290,44 +340,51 @@ export const reactClass = connect(state => ({
 
 
 
-    openNewPage = () => {
-        const fleetData = this.exportFleet();
-        
-        // 根据当前选择导出舰娘数据
-        let ships;
+    getShipsForExport = () => {
+        const ships = Object.values(this.props.ships).filter(Boolean);
+
         if (this.state.shipExportType === 'all') {
-            ships = Object.keys(this.props.ships).map(key => parseShip(this.props.ships[key]));
-        } else {
-            ships = Object.values(this.props.ships)
-                .filter(ship => ship.api_locked == "1" || ship.api_locked == 1)
-                .map(ship => parseShip(ship));
-        }
-        
-        // 根据当前选择导出装备数据
-        let items;
-        if (this.state.equipExportType === 'all') {
-            items = [];
-            Object.keys(this.props.equips).forEach((key) => {
-                const equip = this.props.equips[key];
-                if (equip) {
-                    items.push({ "id": equip.api_slotitem_id, "lv": equip.api_level || 0 });
-                }
-            });
-        } else {
-            items = [];
-            const len = Object.keys(this.props.equips).pop();
-            for (let j = 0; j < len; j++) {
-                const equip = this.props.equips[j];
-                if (equip && (equip.api_locked == "1" || equip.api_locked == 1)) {
-                    items.push({ "id": equip.api_slotitem_id, "lv": equip.api_level || 0 });
-                }
-            }
+            return ships.map(parseShip);
         }
 
-        // 构建完整的导入数据对象
-        const predeck = JSON.parse(fleetData);
-        const importData = { predeck, ships, items };
-        const url = `https://noro6.github.io/kc-web#import:${JSON.stringify(importData)}`;
+        return ships
+            .filter(ship => ship.api_locked == "1" || ship.api_locked == 1)
+            .map(parseShip);
+    }
+
+
+
+    getItemsForExport = () => {
+        const equips = Object.values(this.props.equips).filter(Boolean);
+
+        return equips
+            .filter(equip =>
+                this.state.equipExportType === 'all'
+                || equip.api_locked == "1"
+                || equip.api_locked == 1
+            )
+            .map(parseEquip);
+    }
+
+
+
+    buildNoro6ImportData = (includeItems = true) => {
+        const importData = {
+            predeck: JSON.parse(this.exportFleet()),
+            ships: this.getShipsForExport()
+        };
+
+        if (includeItems) {
+            importData.items = this.getItemsForExport();
+        }
+
+        return importData;
+    }
+
+
+
+    openNewPage = () => {
+        const url = createNoro6ImportUrl(this.buildNoro6ImportData());
         
         // 从本地存储读取上次的窗口大小
         const savedBounds = localStorage.getItem('noro6-window-bounds');
@@ -350,7 +407,7 @@ export const reactClass = connect(state => ({
                 windowOptions.height = bounds.height;
                 if (bounds.x !== undefined && bounds.y !== undefined) {
                     windowOptions.x = bounds.x;
-                    windowOptions.y = bounds.y;
+                    windowOptions.y = bounds.y;            
                 }
             } catch (e) {
                 console.error('Failed to parse saved window bounds:', e);
@@ -385,6 +442,7 @@ export const reactClass = connect(state => ({
 
 
     copyUrl = () => {
+        // 保持原有predeck链接格式，只在舰娘数据中追加活动贴条字段。
         const fleetData = this.exportFleet();
         const url = `https://noro6.github.io/kc-web/?predeck=${fleetData}`;
         copyToClipboard(url);
@@ -392,11 +450,11 @@ export const reactClass = connect(state => ({
 
 
 
-    // 从外部浏览器打开noro6，只导出舰队配置和陆航
+    // 从外部浏览器打开noro6，导出舰队、舰娘（含贴条）和装备。
+    // 使用本地中转页规避系统直接打开超长URL时的长度限制。
     openNoro6External = () => {
-        const fleetData = this.exportFleet();
-        const url = `https://noro6.github.io/kc-web/?predeck=${fleetData}`;
-        shell.openExternal(url);
+        const url = createNoro6ImportUrl(this.buildNoro6ImportData());
+        openLongUrlExternal(url);
     }
 
 
