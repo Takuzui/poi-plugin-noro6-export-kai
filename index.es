@@ -10,6 +10,7 @@ const { i18n } = window;
 const parseShip = (ship) => {
     let tempObj =
     {
+        "api_id": ship.api_id,
         "api_ship_id": ship.api_ship_id,
         "api_lv": ship.api_lv,
         "api_kyouka": ship.api_kyouka,
@@ -93,6 +94,10 @@ export const reactClass = connect(state => ({
                     const ship = ships[fleet.api_ship[j]];
                     result += `"s${j + 1}":{"id":${ship.api_ship_id},"lv":${ship.api_lv},"luck":${ship.api_lucky[0]}`;
                     
+                    if (ship.api_sally_area !== undefined) {
+                        result += `,"area":${ship.api_sally_area}`;
+                    }
+
                     // 添加缎带信息 (spi 格式用于 DeckBuilder)
                     if (ship.api_sp_effect_items && ship.api_sp_effect_items.length) {
                         result += `,"spi":${JSON.stringify(ship.api_sp_effect_items.map(item => ({
