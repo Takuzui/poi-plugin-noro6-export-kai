@@ -1,6 +1,6 @@
 {
     "name": "poi-plugin-noro6-export-kai",
-    "version": "1.4.4",
+    "version": "1.5.0",
     "main": "index.es",
     "description": "a plugin export ships and equips to noro6",
     "author": {
