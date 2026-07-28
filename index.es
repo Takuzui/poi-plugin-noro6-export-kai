@@ -14,7 +14,7 @@ const NORO6_MODE_ICONS = {
 const Noro6ModeIcon = ({ mode }) => (
     <svg width="23" height="23" viewBox="0 0 24 24" aria-hidden="true">
         <path
-            d={NORO6_MODE_ICONS[mode]}
+            d={NORO6_MODE_ICONS[mode === 'fleet' ? 'fleet' : 'stock']}
             fill={mode === 'fleet' ? '#66bb6a' : '#42a5f5'}
         />
     </svg>
@@ -88,8 +88,7 @@ export const reactClass = connect(state => ({
         shipExportType: "locked",
         equipExportType: "all",
         airbaseAreaId: "event",  // "event" (活动海域, >=30), "central" (中部海域, 6), "southwest" (南西海域, 7)
-        copyMode: "fleet",
-        stockCopyStep: "ship"
+        copyMode: "fleet"
     };
 
     //导出舰队和陆航信息
@@ -439,7 +438,7 @@ export const reactClass = connect(state => ({
             return;
         }
 
-        if (this.state.stockCopyStep === 'ship') {
+        if (this.state.copyMode === 'ship') {
             const response = {
                 api_result: 1,
                 api_result_msg: '成功',
@@ -448,7 +447,6 @@ export const reactClass = connect(state => ({
                 }
             };
             copyToClipboard(`svdata=${JSON.stringify(response)}`);
-            this.setState({ stockCopyStep: 'equip' });
             return;
         }
 
@@ -458,15 +456,18 @@ export const reactClass = connect(state => ({
             api_data: this.getSelectedEquips()
         };
         copyToClipboard(`svdata=${JSON.stringify(response)}`);
-        this.setState({ stockCopyStep: 'ship' });
     }
 
 
 
     toggleCopyMode = () => {
+        const nextCopyMode = {
+            fleet: 'ship',
+            ship: 'equip',
+            equip: 'fleet'
+        };
         this.setState(state => ({
-            copyMode: state.copyMode === 'fleet' ? 'stock' : 'fleet',
-            stockCopyStep: 'ship'
+            copyMode: nextCopyMode[state.copyMode]
         }));
     }
 
@@ -493,15 +494,18 @@ export const reactClass = connect(state => ({
     render() {
         const result = this.state.result;
         const __ = i18n['poi-plugin-noro6-export-kai'].__.bind(i18n['poi-plugin-noro6-export-kai']);
-        const isFleetCopyMode = this.state.copyMode === 'fleet';
-        const copyButtonLabel = isFleetCopyMode
-            ? __('Copy Fleet Composition Data')
-            : this.state.stockCopyStep === 'ship'
-                ? __('Copy Ship Data')
-                : __('Copy Equipment Data');
-        const copyModeTitle = isFleetCopyMode
-            ? __('Switch to Ship/Equipment Data')
-            : __('Switch to Fleet Composition Data');
+        const copyButtonLabels = {
+            fleet: __('Copy Fleet Composition Data'),
+            ship: __('Copy Ship Data'),
+            equip: __('Copy Equipment Data')
+        };
+        const nextCopyModeTitles = {
+            fleet: __('Switch to Ship Data'),
+            ship: __('Switch to Equipment Data'),
+            equip: __('Switch to Fleet Composition Data')
+        };
+        const copyButtonLabel = copyButtonLabels[this.state.copyMode];
+        const copyModeTitle = nextCopyModeTitles[this.state.copyMode];
         return (
             <div style={{ padding: '10px' }}>
                 <div style={{ marginBottom: '20px' }}>

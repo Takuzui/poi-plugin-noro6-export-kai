@@ -9,6 +9,8 @@
     "Copy Ship Data": "艦娘データをコピー",
     "Copy Equipment Data": "装備データをコピー",
     "Switch to Ship/Equipment Data": "艦娘/装備データに切り替え",
+    "Switch to Ship Data": "艦娘データに切り替え",
+    "Switch to Equipment Data": "装備データに切り替え",
     "Switch to Fleet Composition Data": "艦隊編成データに切り替え",
     "Airbase Area": "基地航空隊選択",
     "Event Airbase": "イベント海域",

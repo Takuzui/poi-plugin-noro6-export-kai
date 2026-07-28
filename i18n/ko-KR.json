@@ -9,6 +9,8 @@
     "Copy Ship Data": "함선 데이터 복사",
     "Copy Equipment Data": "장비 데이터 복사",
     "Switch to Ship/Equipment Data": "함선/장비 데이터로 전환",
+    "Switch to Ship Data": "함선 데이터로 전환",
+    "Switch to Equipment Data": "장비 데이터로 전환",
     "Switch to Fleet Composition Data": "함대 편성 데이터로 전환",
     "Airbase Area": "기지항공대 선택",
     "Event Airbase": "이벤트 해역",
