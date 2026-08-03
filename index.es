@@ -485,7 +485,7 @@ export const reactClass = connect(state => ({
     // 从外部浏览器打开jervis，只导出舰队配置和陆航
     openJervisExternal = () => {
         const fleetData = this.exportFleet();
-        const url = `https://jervis.vercel.app/?predeck=${fleetData}`;
+        const url = `https://fleethub.madonoharu.workers.dev/?predeck=${fleetData}`;
         shell.openExternal(url);
     }
 
